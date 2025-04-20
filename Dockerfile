@@ -13,5 +13,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Command to run CLI
-CMD ["uvicorn", "app.interfaces.api.fastapi_app:app", "--host", "0.0.0.0", "--port", "8000"]
+# TODO : Remove --reload for production
+CMD ["uvicorn", "app.interfaces.api.fastapi_app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 #CMD ["python", "-u", "app/interfaces/cli/main.py"]

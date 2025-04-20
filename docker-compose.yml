@@ -7,6 +7,8 @@ services:
     volumes:
       - .:/app
       - ./app:/app/app
+      - ./app/database.sqlite:/app/app/database.sqlite
+
     #environment:
     #  - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
     #  - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
@@ -16,3 +18,14 @@ services:
       - .env
     stdin_open: true
     tty: true
+    develop:
+      watch:
+        - action: sync
+          path: ./app
+          target: /app/app
+          ignore:
+            - "**/__pycache__"
+            - "**/*.pyc"
+            - "**/.DS_Store"
+        - action: rebuild
+          path: requirements.txt
