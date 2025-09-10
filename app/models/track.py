@@ -1,6 +1,8 @@
 from typing import List, Optional
 from app.models.album import Album
 from app.models.artist import Artist
+from app.models.tag import Tag
+
 
 class Track:
     def __init__(
@@ -10,7 +12,8 @@ class Track:
         album: Optional[Album] = None,
         id: Optional[str] = None,
         url: Optional[str] = None,
-        duration: Optional[int] = None
+        duration: Optional[int] = None,
+        tags: Optional[List[Tag]] = None
     ):
         """
         Initialize a Track object.
@@ -20,6 +23,7 @@ class Track:
         :param id: str
         :param url: str
         :param duration: int
+        :param tags: List[Tag]
         """
         self.title = title
         self.artists = artists or []
@@ -27,6 +31,7 @@ class Track:
         self.id = id
         self.url = url
         self.duration = duration
+        self.tags = tags or []
 
     # Getters
     def get_title(self):
@@ -46,6 +51,9 @@ class Track:
 
     def get_duration(self):
         return self.duration
+
+    def get_tags(self):
+        return self.tags
 
     # Setters
     def set_title(self, title: str):
@@ -71,6 +79,13 @@ class Track:
 
     def set_duration(self, duration: int):
         self.duration = duration
+
+    def set_tags(self, tags: List[Tag]):
+        self.tags = tags
+
+    def add_tag(self, tag: Tag):
+        if tag not in self.tags:
+            self.tags.append(tag)
 
     def __repr__(self):
         return f"Track(title={self.title}, artist={self.artists}, album={self.album}, duration={self.duration})"

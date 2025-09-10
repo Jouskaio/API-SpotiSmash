@@ -7,7 +7,9 @@ services:
     volumes:
       - .:/app
       - ./app:/app/app
-      - ./app/database.sqlite:/app/app/database.sqlite
+      #- ./app/database.sqlite:/app/app/database.sqlite
+      - ./app/infrastructure/database/database.sqlite:/app/app/infrastructure/database/database.sqlite
+      - ./app/infrastructure/datasets/public_users.xlsx:/app/app/infrastructure/datasets/public_users.xlsx
 
     #environment:
     #  - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}

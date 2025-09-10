@@ -3,3 +3,9 @@ python-dotenv==1.0.0
 fastapi==0.103.1
 uvicorn==0.23.2
 sqlalchemy==2.0.40
+numpy==2.0.2
+scikit-learn==1.6.1
+pylast==5.5.0
+pandas==2.2.3
+asyncio==3.4.3
+openpyxl==3.1.5

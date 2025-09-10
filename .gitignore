@@ -178,3 +178,4 @@ cython_debug/
 
 /app/infrastructure/database/database.sqlite
 /logs/
+.cache/!/app/infrastructure/datasets/~$public_users.xlsx

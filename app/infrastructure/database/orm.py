@@ -28,6 +28,12 @@ artist_genre = Table(
     Column('genre_name', String, ForeignKey('genre.name'))
 )
 
+track_tag = Table(
+    'track_tag', Base.metadata,
+    Column('track_id', String, ForeignKey('track.id')),
+    Column('tag_name', String, ForeignKey('tag.name'))
+)
+
 class ArtistORM(Base):
     __tablename__ = 'artist'
     id = Column(String, primary_key=True)
@@ -41,6 +47,11 @@ class GenreORM(Base):
     __tablename__ = 'genre'
     name = Column(String, primary_key=True)
     artists = relationship("ArtistORM", secondary=artist_genre, back_populates="genres")
+
+class TagORM(Base):
+    __tablename__ = 'tag'
+    name = Column(String, primary_key=True)
+    tracks = relationship("TrackORM", secondary=track_tag, back_populates="tags")
 
 class AlbumORM(Base):
     __tablename__ = 'album'
@@ -61,6 +72,7 @@ class TrackORM(Base):
     album = relationship("AlbumORM", back_populates="tracks")
     artists = relationship("ArtistORM", secondary=track_artist, back_populates="tracks")
     playlists = relationship("PlaylistORM", secondary=playlist_track, back_populates="tracks")
+    tags = relationship("TagORM", secondary=track_tag, back_populates="tracks")
 
 class PlaylistORM(Base):
     __tablename__ = 'playlist'

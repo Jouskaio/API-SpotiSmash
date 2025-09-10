@@ -1,49 +1,35 @@
 import logging
-
 from sqlalchemy.orm import Session
-
-from app.infrastructure.database.orm import AlbumORM, ArtistORM
+from sqlalchemy.exc import IntegrityError
+from app.infrastructure.database.orm import AlbumORM
+from app.infrastructure.database.repositories.artist_repository import get_or_create_artist_orm
 from app.models.album import Album
 
-
 def get_or_create_album_orm(album: Album, session: Session) -> AlbumORM:
-    if not album.get_id():
-        raise logging.error("Album ID is required to get or create an AlbumORM")
-
     album_cache = session.info.setdefault("album_cache", {})
-    artist_cache = session.info.setdefault("artist_cache", {})
 
-    # Cache album
-    if album.get_id() in album_cache:
-        return album_cache[album.get_id()]
+    album_id = album.get_id()
+    if not album_id:
+        raise ValueError("Album ID is required")
 
-    existing_album = session.get(AlbumORM, album.get_id())
-    if existing_album:
-        album_cache[album.get_id()] = existing_album
-        return existing_album
+    # Cache check
+    if album_id in album_cache:
+        return album_cache[album_id]
 
-    artist_orms = []
-    for artist in album.get_artists():
-        artist_id = artist.get_id()
-        if not artist_id:
-            continue
+    # DB check
+    existing = session.get(AlbumORM, album_id)
+    if existing:
+        album_cache[album_id] = existing
+        return existing
 
-        # Check artist cache
-        if artist_id in artist_cache:
-            artist_orm = artist_cache[artist_id]
-        else:
-            artist_orm = session.get(ArtistORM, artist_id)
-            if not artist_orm:
-                artist_orm = ArtistORM(
-                    id=artist_id,
-                    name=artist.get_name(),
-                    image=artist.get_image()
-                )
-                session.add(artist_orm)
-            artist_cache[artist_id] = artist_orm
+    # Create artists
+    artist_orms = [
+        get_or_create_artist_orm(artist, session)
+        for artist in album.get_artists()
+        if artist.get_id()
+    ]
 
-        artist_orms.append(artist_orm)
-
+    # Build new AlbumORM
     album_orm = AlbumORM(
         id=album.get_id(),
         title=album.get_title(),
@@ -51,6 +37,16 @@ def get_or_create_album_orm(album: Album, session: Session) -> AlbumORM:
         image=album.get_image(),
         artists=artist_orms
     )
-    session.add(album_orm)
-    album_cache[album.get_id()] = album_orm
-    return album_orm
+
+    try:
+        session.add(album_orm)
+        session.flush()  # Trigger insert, catch error now
+        album_cache[album_id] = album_orm
+        return album_orm
+
+    except IntegrityError:
+        session.rollback()
+        logging.warning(f"⚠️ Album already inserted by another thread: {album_id}")
+        existing = session.get(AlbumORM, album_id)
+        album_cache[album_id] = existing
+        return existing

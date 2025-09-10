@@ -1,19 +1,24 @@
 import logging
-
-from spotipy import Spotify
 from app.infrastructure.database.repositories.album_repository import get_or_create_album_orm
 from app.infrastructure.database.repositories.playlist_repository import get_or_create_playlist_orm
 from app.infrastructure.database.repositories.track_repository import get_or_create_track_orm
 from app.infrastructure.database.session_manager import session_scope
+from app.infrastructure.lastfm.client import LastFMClientWithRetry
+from app.infrastructure.spotify.client import SpotifyClientWithRetry
 from app.models.album import Album
 from app.models.artist import Artist
 from app.models.playlist import Playlist
 from app.models.track import Track
 from app.models.user import User
 
-def get_current_user_profile_tracks(spotify_client: Spotify, user: User):
+
+def get_current_user_profile_tracks(
+    spotify_client: SpotifyClientWithRetry,
+    user: User,
+    lastfm_client: LastFMClientWithRetry  # PAS de `.client()` plus tard
+):
     try:
-        data = spotify_client.user_playlists(user=user.get_id())
+        data = spotify_client.user_playlists(user.get_id())
         playlist_items = data.get("items", [])
 
         playlists = [
@@ -52,8 +57,6 @@ def get_current_user_profile_tracks(spotify_client: Spotify, user: User):
                         if a.get("name")
                     ]
 
-                    # Create Album object
-                    album_orm = None
                     if track_data.get("album", {}).get("id"):
                         album = Album(
                             title=track_data.get("album", {}).get("name"),
@@ -74,9 +77,10 @@ def get_current_user_profile_tracks(spotify_client: Spotify, user: User):
                         url=track_data.get("external_urls", {}).get("spotify"),
                         duration=track_data.get("duration_ms")
                     )
+
                     tracks.append(track)
 
-                    get_or_create_track_orm(track, album_orm, session)
+                    get_or_create_track_orm(track, album_orm, session, lastfm_client)
 
                 get_or_create_playlist_orm(playlist, user.get_id(), session)
 

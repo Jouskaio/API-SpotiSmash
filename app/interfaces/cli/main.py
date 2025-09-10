@@ -1,7 +1,6 @@
 import logging
 from pathlib import Path
 from sqlalchemy import create_engine
-
 from app.infrastructure.logging.setup_logging import setup_logging
 from app.infrastructure.database.orm import Base
 
@@ -21,4 +20,5 @@ def init_db():
 
 if __name__ == "__main__":
     setup_logging()
+    logging.info("Initializing Spotify client...")
     init_db()

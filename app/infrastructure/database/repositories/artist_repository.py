@@ -1,31 +1,31 @@
-from typing import Union, Type
-
 from sqlalchemy.orm import Session
-
-from app.infrastructure.database.orm import ArtistORM
 from app.models.artist import Artist
+from app.infrastructure.database.orm import ArtistORM
 
+def get_or_create_artist_orm(artist: Artist, session: Session) -> ArtistORM:
+    artist_cache = session.info.setdefault("artist_cache", {})
+    artist_id = artist.get_id()
 
-def get_or_create_artist_orm(artist: Artist, session: Session) -> Union[Type[ArtistORM], None, ArtistORM]:
-    if not artist.get_id():
-        raise ValueError("Artist ID is required to get or create an ArtistORM")
+    if not artist_id:
+        raise ValueError("Artist ID is required")
 
-    if not hasattr(session.info, "artist_cache"):
-        session.info["artist_cache"] = set()
+    # Check cache
+    if artist_id in artist_cache:
+        return artist_cache[artist_id]
 
-    if artist.get_id() in session.info["artist_cache"]:
-        return session.get(ArtistORM, artist.get_id())
+    # Check DB
+    existing = session.get(ArtistORM, artist_id)
+    if existing:
+        artist_cache[artist_id] = existing
+        return existing
 
-    existing_artist = session.get(ArtistORM, artist.get_id())
-    if existing_artist:
-        session.info["artist_cache"].add(artist.get_id())
-        return existing_artist
-
+    # Create new ArtistORM
     artist_orm = ArtistORM(
-        id=artist.get_id(),
+        id=artist_id,
         name=artist.get_name(),
         image=artist.get_image()
     )
+
     session.add(artist_orm)
-    session.info["artist_cache"].add(artist.get_id())
+    artist_cache[artist_id] = artist_orm
     return artist_orm

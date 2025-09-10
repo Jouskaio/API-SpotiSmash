@@ -1,15 +1,17 @@
 import logging
 
+from pylast import LastFMNetwork
 from spotipy import Spotify
 
 from app.infrastructure.database.connection import get_db_session
 from app.infrastructure.database.orm import UserORM
+from app.infrastructure.spotify.client import SpotifyClientWithRetry
 from app.models.user import User
 
 
-def get_user_profile(spotify_client: Spotify, id: str):
+def get_user_profile(spotify_client: SpotifyClientWithRetry, id: str):
     try:
-        data = spotify_client.user(id)
+        data = spotify_client.client.user(id)
         user = User.from_api_response(data)
 
         session = get_db_session()
