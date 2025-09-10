@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from starlette.responses import RedirectResponse, JSONResponse
 from app.infrastructure.lastfm.client import LastFMClientWithRetry
 from app.infrastructure.spotify.client import SpotifyClientWithRetry
-from app.use_cases.spotify.user_me import get_user_me
+from app.use_cases.spotify.user_me import clean_user_me
 from app.use_cases.spotify.user_profile import get_user_profile
 from app.use_cases.spotify.user_tracks import get_current_user_profile_tracks
 
@@ -21,7 +21,7 @@ def get_user(id: str = Query(..., description="User ID (Spotify pseudo)")):
     return user
 
 
-@router.get("/user/me")
+@router.get("/user/me/clean")
 def get_me(request: Request):
     user_token = request.cookies.get("spotify_token")
 
@@ -34,12 +34,11 @@ def get_me(request: Request):
     # Authentifier l'utilisateur avec le token d'accès
     spotify_client.auth_manager.access_token = user_token
 
-    user = get_user_me(spotify_client)
+    user = clean_user_me(spotify_client)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     return user
-
 
 
 @router.get("/user/tracks")
