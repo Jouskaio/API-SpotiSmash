@@ -1,9 +1,25 @@
+from app.models.playlist import Playlist
+
+
 class User:
-    def __init__(self, id: str, display_name=None, photo=None, uri=None):
+    def __init__(self, id: str,
+                 display_name: str = None,
+                 photo: str = None,
+                 uri: str = None,
+                 playlists: [Playlist] = None):
+        """
+        Initialize a User object.
+        :param id: str
+        :param display_name: str
+        :param photo: str
+        :param uri: str
+        :param playlists: List[Playlist]
+        """
         self.id = id
         self.display_name = display_name
         self.photo = photo
         self.uri = uri
+        self.playlists = playlists if playlists else []
 
     @classmethod
     def from_api_response(cls, data: dict):
@@ -43,6 +59,13 @@ class User:
         """
         return self.uri
 
+    def get_playlists(self):
+        """
+        Get the user's playlists.
+        :return: List of playlists
+        """
+        return self.playlists
+
     #    Setters
     def set_display_name(self, display_name):
         """
@@ -78,6 +101,24 @@ class User:
         :return: User object
         """
         self.id = id
+        return self
+
+    def set_playlists(self, playlists):
+        """
+        Set the user's playlists.
+        :param playlists: List of playlists
+        :return: User object
+        """
+        self.playlists = playlists
+        return self
+
+    def add_playlist(self, playlist):
+        """
+        Add a playlist to the user's playlists.
+        :param playlist: Playlist object
+        :return: User object
+        """
+        self.playlists.append(playlist)
         return self
 
     def __repr__(self):

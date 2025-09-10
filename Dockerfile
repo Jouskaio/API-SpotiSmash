@@ -12,8 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy app source
 COPY . .
 
-# Expose the redirect URI port
-EXPOSE 8888
-
 # Command to run CLI
-CMD ["python", "-u", "app/interfaces/cli/main.py"]
+# TODO : Remove --reload for production
+CMD ["uvicorn", "app.interfaces.api.fastapi_app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+#CMD ["python", "-u", "app/interfaces/cli/main.py"]
